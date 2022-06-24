@@ -9,10 +9,15 @@ import os
 import pickle
 import datetime
 import pandas as pd 
+import numpy as np
 
 from Modules_Covid19 import EDA,ModelCreation,ModelEvaluation
 from sklearn.preprocessing import MinMaxScaler
-import numpy as np
+from sklearn.metrics import mean_squared_error,mean_absolute_error,mean_absolute_percentage_error
+
+from tensorflow.keras.callbacks import TensorBoard
+from tensorflow.keras.utils import plot_model
+
 
 #%% Statics
 DATA_PATH = os.path.join(os.getcwd(),'cases_malaysia_train.csv')
@@ -63,8 +68,6 @@ df.info()
 # From info, can see the cluster section has so many Nans, but no need to worry since 
 # we dont need them as features, only need cases_new
 
-
-
 #%% Features Selection
 
 # no other features significant for predicting, only select cases_new 
@@ -91,9 +94,6 @@ y_train = np.array(y_train)
 # never perform train test split for time series data
 
 #%% Model Development
-
-from tensorflow.keras.callbacks import TensorBoard
-from tensorflow.keras.utils import plot_model
 
 mc = ModelCreation()
 model = mc.simple_lstm_layer(x_train)
@@ -137,7 +137,6 @@ x_test = np.array(x_test)
 predicted = model.predict(np.expand_dims(x_test,axis=-1))
 
 
-
 #%% Prediction Visualisation
 
 me.plot_predicted_graph(test_df, predicted, mms)
@@ -145,9 +144,7 @@ me.plot_predicted_graph(test_df, predicted, mms)
 # From plotting, the predicted is able to follow the trend from the actual cases
 # They are not really flunctuate and still able to predict since they have high MAPE
 
-#%%
-
-from sklearn.metrics import mean_squared_error,mean_absolute_error,mean_absolute_percentage_error
+#%%  MAE,MSE,MAPE
 
 test_df_inversed = mms.inverse_transform(test_df)
 predicted_inversed = mms.inverse_transform(predicted)
@@ -169,7 +166,7 @@ print((mean_absolute_error(test_df,predicted)/sum(abs(test_df))) *100)
 # From the model training and results, it can concludes that this model able 
 # to predict new cases in the future after training from 30 past days dataset
 # Maybe can try to increase number of epochs to shrink the MAPE value, minimise number of dropout rate
-# For improvement, can include a web scarping algorithm to analyse the latest news 
+# For improvement, can include a web scraping algorithm to analyse the latest news 
 # to polish up the model performance
 
 
